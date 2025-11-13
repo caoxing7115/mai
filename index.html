@@ -16,19 +16,19 @@
       align-items: center;
     }
 
-    /* 统一提示气泡样式 */
+    /* 💬 小巧、扁平化提示气泡 */
     .tip {
       position: absolute;
-      width: 90px;
-      height: 36px;
-      line-height: 36px;
+      width: 80px;
+      height: 28px;
+      line-height: 28px;
       text-align: center;
-      border-radius: 18px;
+      border-radius: 14px;
       color: #333;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       background: lightpink;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
       opacity: 0;
       animation: fadeIn 1.2s ease-out forwards;
       white-space: nowrap;
@@ -64,7 +64,7 @@
       border-radius: 12px;
     }
 
-    /* ❤️爱心跳动动画 */
+    /* ❤️ 爱心跳动动画 */
     @keyframes heartBeat {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.08); }
@@ -122,7 +122,7 @@
     // 控制心形缩放比例（适配手机）
     function getScale() {
       const minSize = Math.min(window.innerWidth, window.innerHeight);
-      return minSize / 40; // 较之前更小比例
+      return minSize / 40; // 调整比例
     }
 
     function showTip(x, y) {
@@ -132,8 +132,8 @@
       tip.style.background = colors[Math.floor(Math.random() * colors.length)];
 
       const scale = getScale();
-      const px = window.innerWidth / 2 + x * scale - 45; // 居中
-      const py = window.innerHeight / 2 - y * scale - 18; // 翻转y轴+调整高度
+      const px = window.innerWidth / 2 + x * scale - 40; // 居中
+      const py = window.innerHeight / 2 - y * scale - 14; // 翻转y轴+调整高度
 
       tip.style.left = px + "px";
       tip.style.top = py + "px";
