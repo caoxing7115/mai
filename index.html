@@ -16,21 +16,21 @@
       align-items: center;
     }
 
-    /* 每个提示气泡样式统一大小 */
+    /* 统一提示气泡样式 */
     .tip {
       position: absolute;
-      width: 120px;
-      height: 50px;
-      line-height: 50px;
+      width: 90px;
+      height: 36px;
+      line-height: 36px;
       text-align: center;
-      border-radius: 25px;
+      border-radius: 18px;
       color: #333;
-      font-size: 15px;
+      font-size: 13px;
       font-weight: bold;
       background: lightpink;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
       opacity: 0;
-      animation: fadeIn 1.5s ease-out forwards;
+      animation: fadeIn 1.2s ease-out forwards;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -56,18 +56,24 @@
 
     .replay-tip {
       position: absolute;
-      bottom: 20px;
-      font-size: 14px;
+      bottom: 18px;
+      font-size: 13px;
       color: #555;
       background: rgba(255,255,255,0.6);
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 12px;
+    }
+
+    /* ❤️爱心跳动动画 */
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
     }
   </style>
 </head>
 <body>
 
-  <!-- 背景音乐，路径留给你修改 -->
+  <!-- 背景音乐（路径你自己改） -->
   <audio id="music" autoplay loop>
     <source src="music.mp3" type="audio/mpeg">
   </audio>
@@ -78,14 +84,15 @@
 
   <script>
     const tips = [
-      '多喝水哦~', '保持微笑呀', '每天都要元气满满', '记得吃水果', '保持好心情',
-      '好好爱自己', '我想你了', '梦想成真', '期待下一次见面', '天冷了，多穿衣服',
-      '愿所有烦恼都消失', '别熬夜', '爱你哦~','按时吃三餐呀','我一直都在','保持乐观','平安喜乐','嘴角上扬','爱你哦~'
+      '多喝水哦~','保持微笑呀','每天都要元气满满','记得吃水果','保持好心情',
+      '好好爱自己','我想你了','梦想成真','期待见面','天冷了，多穿衣服',
+      '愿烦恼都消失','别熬夜','爱你哦~','按时吃饭','我一直都在','保持乐观',
+      '平安喜乐','嘴角上扬','开心每一天'
     ];
 
     const colors = [
-      'lightpink', 'skyblue', 'lightgreen', 'lavender', 'lightyellow',
-      'plum', 'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew'
+      '#ffc0cb','#ffb6c1','#ff99cc','#ffb7dd','#ffccff','#ffdde1',
+      '#ffcad4','#ffd6d6','#fbb1bd','#ffe5ec'
     ];
 
     const canvas = document.getElementById("heartCanvas");
@@ -100,11 +107,11 @@
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    // 生成标准心形坐标
+    // ❤️ 生成标准心形坐标
     function generateHeartPoints(numPoints = 80) {
       const points = [];
       for (let i = 0; i < numPoints; i++) {
-        const t = 2 * Math.PI * i / numPoints;
+        const t = Math.PI - 2 * Math.PI * i / numPoints; // 修正方向
         const x = 16 * Math.pow(Math.sin(t), 3);
         const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
         points.push({x, y});
@@ -112,10 +119,10 @@
       return points;
     }
 
-    // 让心形保持标准比例
+    // 控制心形缩放比例（适配手机）
     function getScale() {
       const minSize = Math.min(window.innerWidth, window.innerHeight);
-      return minSize / 30; // 控制爱心大小比例
+      return minSize / 40; // 较之前更小比例
     }
 
     function showTip(x, y) {
@@ -125,8 +132,8 @@
       tip.style.background = colors[Math.floor(Math.random() * colors.length)];
 
       const scale = getScale();
-      const px = window.innerWidth / 2 + x * scale - 60; // 居中
-      const py = window.innerHeight / 2 - y * scale - 25; // 翻转y轴+调整高度
+      const px = window.innerWidth / 2 + x * scale - 45; // 居中
+      const py = window.innerHeight / 2 - y * scale - 18; // 翻转y轴+调整高度
 
       tip.style.left = px + "px";
       tip.style.top = py + "px";
@@ -134,15 +141,15 @@
       document.body.appendChild(tip);
     }
 
-    function drawHeartOutline() {
+    function drawHeartOutline(scale, pulseScale = 1) {
       const points = generateHeartPoints(200);
-      const scale = getScale();
-      ctx.strokeStyle = "rgba(255, 105, 180, 0.5)";
-      ctx.lineWidth = 3;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "rgba(255, 105, 180, 0.4)";
+      ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 0; i < points.length; i++) {
-        const px = window.innerWidth / 2 + points[i].x * scale;
-        const py = window.innerHeight / 2 - points[i].y * scale;
+        const px = window.innerWidth / 2 + points[i].x * scale * pulseScale;
+        const py = window.innerHeight / 2 - points[i].y * scale * pulseScale;
         if (i === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       }
@@ -157,29 +164,40 @@
 
       // 清除旧提示框
       document.querySelectorAll(".tip").forEach(e => e.remove());
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawHeartOutline();
 
       const heartPoints = generateHeartPoints(80);
+      const scale = getScale();
+
+      // 绘制动画心形+跳动效果
       for (let i = 0; i < heartPoints.length; i++) {
+        drawHeartOutline(scale);
         const p = heartPoints[i];
         showTip(p.x, p.y);
-        await new Promise(r => setTimeout(r, 150));
+        await new Promise(r => setTimeout(r, 120));
       }
+
+      // ❤️心形持续跳动动画
+      let pulse = 0;
+      function heartbeat() {
+        pulse = (pulse + 0.02) % (2 * Math.PI);
+        const pulseScale = 1 + 0.05 * Math.sin(pulse);
+        drawHeartOutline(scale, pulseScale);
+        requestAnimationFrame(heartbeat);
+      }
+      heartbeat();
 
       animating = false;
     }
 
-    // 点击重播动画
+    // 点击重新播放
     document.body.addEventListener("click", () => {
-      music.play(); // 确保移动端能播放
+      music.play(); // 移动端需用户触发
       playHeartAnimation();
     });
 
-    // 初次播放
+    // 首次加载
     window.onload = () => {
       playHeartAnimation();
-      // 移动端需首次交互后播放音乐
       document.addEventListener("touchstart", () => music.play(), { once: true });
     };
   </script>
