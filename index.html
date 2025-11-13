@@ -16,7 +16,7 @@
       align-items: center;
     }
 
-    /* 💬 小巧、扁平化提示气泡 */
+    /* 💬 小巧、扁平气泡 */
     .tip {
       position: absolute;
       width: 80px;
@@ -30,10 +30,16 @@
       background: lightpink;
       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
       opacity: 0;
-      animation: fadeIn 1.2s ease-out forwards;
+      animation: fadeIn 1.2s ease-out forwards, float 3s ease-in-out infinite;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    /* 漂浮上下轻微浮动动画 */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
     }
 
     @keyframes fadeIn {
@@ -64,16 +70,16 @@
       border-radius: 12px;
     }
 
-    /* ❤️ 爱心跳动动画 */
-    @keyframes heartBeat {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
+    /* ❤️ 爱心呼吸式跳动动画（明显可见） */
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,105,180,0.4)); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(255,105,180,0.8)); }
     }
   </style>
 </head>
 <body>
 
-  <!-- 背景音乐（路径你自己改） -->
+  <!-- 🎵 背景音乐（你自己修改路径） -->
   <audio id="music" autoplay loop>
     <source src="music.mp3" type="audio/mpeg">
   </audio>
@@ -103,15 +109,14 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    // ❤️ 生成标准心形坐标
+    // ❤️ 标准爱心参数
     function generateHeartPoints(numPoints = 80) {
       const points = [];
       for (let i = 0; i < numPoints; i++) {
-        const t = Math.PI - 2 * Math.PI * i / numPoints; // 修正方向
+        const t = Math.PI - 2 * Math.PI * i / numPoints;
         const x = 16 * Math.pow(Math.sin(t), 3);
         const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
         points.push({x, y});
@@ -119,10 +124,9 @@
       return points;
     }
 
-    // 控制心形缩放比例（适配手机）
     function getScale() {
       const minSize = Math.min(window.innerWidth, window.innerHeight);
-      return minSize / 40; // 调整比例
+      return minSize / 40;
     }
 
     function showTip(x, y) {
@@ -131,30 +135,35 @@
       tip.innerText = tips[Math.floor(Math.random() * tips.length)];
       tip.style.background = colors[Math.floor(Math.random() * colors.length)];
 
-      const scale = getScale();
-      const px = window.innerWidth / 2 + x * scale - 40; // 居中
-      const py = window.innerHeight / 2 - y * scale - 14; // 翻转y轴+调整高度
+      // 随机浮动周期，让气泡节奏不同步
+      tip.style.animationDuration = `${2 + Math.random() * 2}s`;
 
+      const scale = getScale();
+      const px = window.innerWidth / 2 + x * scale - 40;
+      const py = window.innerHeight / 2 - y * scale - 14;
       tip.style.left = px + "px";
       tip.style.top = py + "px";
 
       document.body.appendChild(tip);
     }
 
-    function drawHeartOutline(scale, pulseScale = 1) {
+    function drawHeart(scale, pulseScale = 1) {
       const points = generateHeartPoints(200);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(255, 105, 180, 0.4)";
-      ctx.lineWidth = 2;
+      ctx.save();
+      ctx.translate(window.innerWidth / 2, window.innerHeight / 2);
+      ctx.scale(scale * pulseScale, -scale * pulseScale);
       ctx.beginPath();
       for (let i = 0; i < points.length; i++) {
-        const px = window.innerWidth / 2 + points[i].x * scale * pulseScale;
-        const py = window.innerHeight / 2 - points[i].y * scale * pulseScale;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+        const p = points[i];
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
       }
       ctx.closePath();
+      ctx.strokeStyle = "rgba(255,105,180,0.6)";
+      ctx.lineWidth = 0.3;
       ctx.stroke();
+      ctx.restore();
     }
 
     let animating = false;
@@ -162,26 +171,25 @@
       if (animating) return;
       animating = true;
 
-      // 清除旧提示框
       document.querySelectorAll(".tip").forEach(e => e.remove());
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const heartPoints = generateHeartPoints(80);
       const scale = getScale();
 
-      // 绘制动画心形+跳动效果
       for (let i = 0; i < heartPoints.length; i++) {
-        drawHeartOutline(scale);
+        drawHeart(scale);
         const p = heartPoints[i];
         showTip(p.x, p.y);
         await new Promise(r => setTimeout(r, 120));
       }
 
-      // ❤️心形持续跳动动画
+      // ❤️ 心形持续“呼吸”跳动
       let pulse = 0;
       function heartbeat() {
-        pulse = (pulse + 0.02) % (2 * Math.PI);
+        pulse += 0.03;
         const pulseScale = 1 + 0.05 * Math.sin(pulse);
-        drawHeartOutline(scale, pulseScale);
+        drawHeart(scale, pulseScale);
         requestAnimationFrame(heartbeat);
       }
       heartbeat();
@@ -189,9 +197,9 @@
       animating = false;
     }
 
-    // 点击重新播放
+    // 点击重播
     document.body.addEventListener("click", () => {
-      music.play(); // 移动端需用户触发
+      music.play();
       playHeartAnimation();
     });
 
