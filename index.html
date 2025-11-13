@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>温馨提示💖</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>温馨提示 💖</title>
   <style>
     body {
       margin: 0;
@@ -14,19 +14,25 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
     }
 
+    /* 温馨提示气泡 */
     .tip {
       position: absolute;
-      padding: 10px 20px;
+      width: 180px;
+      height: 60px;
       border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       color: #333;
       font-size: 16px;
       font-weight: bold;
-      white-space: nowrap;
-      animation: fadeInOut 6s ease-in-out forwards;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       opacity: 0;
+      animation: fadeInOut 6s ease-in-out forwards;
+      text-align: center;
     }
 
     @keyframes fadeInOut {
@@ -36,9 +42,67 @@
       90% { opacity: 1; }
       100% { opacity: 0; transform: scale(0.8); }
     }
+
+    /* 心形按钮 */
+    .heart-btn {
+      width: 80px;
+      height: 80px;
+      background-color: #ff4d6d;
+      position: relative;
+      transform: rotate(-45deg);
+      cursor: pointer;
+      animation: pulse 1.5s infinite;
+      box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+      z-index: 10;
+    }
+
+    .heart-btn::before,
+    .heart-btn::after {
+      content: "";
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background-color: #ff4d6d;
+      border-radius: 50%;
+    }
+
+    .heart-btn::before {
+      top: -40px;
+      left: 0;
+    }
+
+    .heart-btn::after {
+      left: 40px;
+      top: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: rotate(-45deg) scale(1); }
+      50% { transform: rotate(-45deg) scale(1.1); }
+    }
+
+    .note {
+      margin-top: 120px;
+      color: #555;
+      font-size: 18px;
+    }
+
+    /* 隐藏音频控件 */
+    audio {
+      display: none;
+    }
   </style>
 </head>
 <body>
+  <!-- 背景音乐 -->
+  <audio id="bg-music" loop autoplay>
+    <source src="https://cdn.pixabay.com/download/audio/2021/09/01/audio_c4cb17b2c3.mp3?filename=sweet-piano-ambient-10050.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 中间心形按钮 -->
+  <div class="heart-btn" id="heart"></div>
+  <div class="note">点击 ❤️ 重新播放温馨提示</div>
+
   <script>
     const tips = [
       '多喝水哦~', '保持微笑呀', '每天都要元气满满', '记得吃水果', '保持好心情',
@@ -51,18 +115,19 @@
       'plum', 'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew'
     ];
 
-    const heartPoints = [];
-    const numPoints = 80; // 控制心形密度
-    for (let i = 0; i < numPoints; i++) {
-      const t = 2 * Math.PI * i / numPoints;
-      const x = 16 * Math.pow(Math.sin(t), 3);
-      const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-      heartPoints.push({x, y});
+    // 生成爱心形状的坐标
+    function generateHeartPoints(n) {
+      const points = [];
+      for (let i = 0; i < n; i++) {
+        const t = 2 * Math.PI * i / n;
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+        points.push({x, y});
+      }
+      return points;
     }
 
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
-    const scale = Math.min(screenW, screenH) / 40; // 缩放系数
+    const heartPoints = generateHeartPoints(80);
 
     function showTip(x, y) {
       const tip = document.createElement("div");
@@ -70,30 +135,46 @@
       tip.innerText = tips[Math.floor(Math.random() * tips.length)];
       tip.style.background = colors[Math.floor(Math.random() * colors.length)];
 
-      // 坐标映射 + 居中
-      const px = screenW/2 + x * scale - 60;
-      const py = screenH/2 - y * scale - 20;
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
+      const scale = Math.min(screenW, screenH) / 40;
+
+      const px = screenW / 2 + x * scale - 90; // 调整居中
+      const py = screenH / 2 - y * scale - 30;
+
       tip.style.left = px + "px";
       tip.style.top = py + "px";
 
       document.body.appendChild(tip);
-
-      // 动画结束后删除
       setTimeout(() => tip.remove(), 6000);
     }
 
-    // 循环生成爱心提示
-    let i = 0;
-    function loop() {
-      if (i < heartPoints.length) {
-        const p = heartPoints[i];
-        showTip(p.x, p.y);
-        i++;
-        setTimeout(loop, 150);
+    // 播放一轮心形提示
+    function playHeart() {
+      let i = 0;
+      function loop() {
+        if (i < heartPoints.length) {
+          const p = heartPoints[i];
+          showTip(p.x, p.y);
+          i++;
+          setTimeout(loop, 150);
+        }
       }
+      loop();
     }
 
-    loop();
+    // 背景音乐自动播放（兼容移动端）
+    const bgMusic = document.getElementById("bg-music");
+    bgMusic.volume = 0.5;
+    document.body.addEventListener("click", () => {
+      bgMusic.play().catch(() => {});
+    });
+
+    // 点击心形按钮重新播放
+    document.getElementById("heart").addEventListener("click", playHeart);
+
+    // 初始播放一轮
+    playHeart();
   </script>
 </body>
 </html>
