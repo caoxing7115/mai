@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>温馨提示💖</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #ffeef0, #ffc2cc);
+      height: 100vh;
+      font-family: "微软雅黑", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tip {
+      position: absolute;
+      padding: 10px 20px;
+      border-radius: 20px;
+      color: #333;
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap;
+      animation: fadeInOut 6s ease-in-out forwards;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      opacity: 0;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: scale(0.5); }
+      10% { opacity: 1; transform: scale(1.1); }
+      50% { transform: scale(1); }
+      90% { opacity: 1; }
+      100% { opacity: 0; transform: scale(0.8); }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const tips = [
+      '多喝水哦~', '保持微笑呀', '每天都要元气满满', '记得吃水果', '保持好心情',
+      '好好爱自己', '我想你了', '梦想成真', '期待下一次见面', '天冷了，多穿衣服',
+      '愿所有烦恼都消失', '别熬夜', '爱你哦~'
+    ];
+
+    const colors = [
+      'lightpink', 'skyblue', 'lightgreen', 'lavender', 'lightyellow',
+      'plum', 'coral', 'bisque', 'aquamarine', 'mistyrose', 'honeydew'
+    ];
+
+    const heartPoints = [];
+    const numPoints = 80; // 控制心形密度
+    for (let i = 0; i < numPoints; i++) {
+      const t = 2 * Math.PI * i / numPoints;
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+      heartPoints.push({x, y});
+    }
+
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    const scale = Math.min(screenW, screenH) / 40; // 缩放系数
+
+    function showTip(x, y) {
+      const tip = document.createElement("div");
+      tip.className = "tip";
+      tip.innerText = tips[Math.floor(Math.random() * tips.length)];
+      tip.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+      // 坐标映射 + 居中
+      const px = screenW/2 + x * scale - 60;
+      const py = screenH/2 - y * scale - 20;
+      tip.style.left = px + "px";
+      tip.style.top = py + "px";
+
+      document.body.appendChild(tip);
+
+      // 动画结束后删除
+      setTimeout(() => tip.remove(), 6000);
+    }
+
+    // 循环生成爱心提示
+    let i = 0;
+    function loop() {
+      if (i < heartPoints.length) {
+        const p = heartPoints[i];
+        showTip(p.x, p.y);
+        i++;
+        setTimeout(loop, 150);
+      }
+    }
+
+    loop();
+  </script>
+</body>
+</html>
